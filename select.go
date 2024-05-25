@@ -95,6 +95,12 @@ func (s *SelectQuery) Select(cols ...string) *SelectQuery {
 	return s
 }
 
+// Clear joins functionality because of slow count calculations
+func (s *SelectQuery) ClearJoins() *SelectQuery {
+	s.join = []JoinInfo{}
+	return s
+}
+
 // AndSelect adds additional columns to be selected.
 // Column names will be automatically quoted.
 func (s *SelectQuery) AndSelect(cols ...string) *SelectQuery {

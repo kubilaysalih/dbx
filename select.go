@@ -401,6 +401,45 @@ type QueryInfo struct {
 	BuildHook    BuildHookFunc
 }
 
+func (s *SelectQuery) HasWhere() bool {
+	return s.where != nil && !isZeroValue(s.where)
+}
+
+// isZeroValue checks if an Expression is a zero value.
+func isZeroValue(x interface{}) bool {
+	return x == nil || reflect.DeepEqual(x, reflect.Zero(reflect.TypeOf(x)).Interface())
+}
+
+func (s *SelectQuery) CloneWithoutJoinsIfNoWhere() *SelectQuery {
+	newQuery := &SelectQuery{
+		builder:      s.builder,
+		ctx:          s.ctx,
+		buildHook:    s.buildHook,
+		selects:      s.selects,
+		distinct:     s.distinct,
+		selectOption: s.selectOption,
+		from:         s.from,
+		join:         s.join,
+		where:        s.where,
+		orderBy:      s.orderBy,
+		groupBy:      s.groupBy,
+		having:       s.having,
+		union:        s.union,
+		limit:        s.limit,
+		offset:       s.offset,
+		params:       s.params,
+		FieldMapper:  s.FieldMapper,
+		TableMapper:  s.TableMapper,
+	}
+
+	// Only clear joins if there is no WHERE condition
+	if !s.HasWhere() {
+		newQuery.join = []JoinInfo{}
+	}
+
+	return newQuery
+}
+
 // Info exports common SelectQuery fields allowing to inspect the
 // current select query options.
 func (s *SelectQuery) Info() *QueryInfo {
